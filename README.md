@@ -53,7 +53,7 @@ pip install -r requirements.txt
 1. 克隆本仓库：
 
 ```bash
-git clone https://github.com/yourusername/SSR-HMR.git
+git clone https://github.com/Lucifer-G0/SSR-HMR.git
 cd SSR-HMR
 ```
 
