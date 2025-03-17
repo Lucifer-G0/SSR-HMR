@@ -3,7 +3,7 @@
 
 The code for this project is currently in a pre-release state and will be publicly available upon the formal acceptance of the associated paper in the journal. We are committed to adhering to the open-source spirit of the academic community and ensuring the integrity and reproducibility of the code.
 
-**SSR-HMR** 是一个基于稀疏节点和骨架感知的实时人体运动重建系统。该系统能够从稀疏的传感器数据中高效地重建人体的运动，适用于虚拟现实（VR）、增强现实（AR）、运动捕捉等领域。
+**SSR-HMR** is a real-time human motion reconstruction system based on sparse nodes and skeleton perception. The system can efficiently reconstruct human movement from sparse sensor data, which is suitable for virtual reality (VR), augmented reality (AR), motion capture and other fields.
 
 ![Pipeline](Pipeline.pdf)
 
