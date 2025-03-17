@@ -17,11 +17,11 @@ Qualitative comparison of the jumping jack motion sequence reconstructed by diff
 ![xsens_nineperson](xsens_nineperson.mp4)
 
 ## Highlights
-Novel SSR-HMR method for real-time, accurate full-body motion reconstruction.
-Lightweight spatiotemporal graph module for precise motion from sparse inputs.
-Torso pose refinement module reduces torso and head orientation drift.
-Hierarchical skeletal structure enhances end-effector positioning accuracy.
-Sub-centimeter accuracy (MPJPE 10 mm, MPEEPE 5 mm) at 267 FPS on CPU
+- Novel SSR-HMR method for real-time, accurate full-body motion reconstruction.
+- Lightweight spatiotemporal graph module for precise motion from sparse inputs.
+- Torso pose refinement module reduces torso and head orientation drift.
+- Hierarchical skeletal structure enhances end-effector positioning accuracy.
+- Sub-centimeter accuracy (MPJPE 10 mm, MPEEPE 5 mm) at 267 FPS on CPU
 
 
 ## 应用场景
