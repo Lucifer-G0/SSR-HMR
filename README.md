@@ -5,6 +5,9 @@ The code for this project is currently in a pre-release state and will be public
 
 **SSR-HMR** 是一个基于稀疏节点和骨架感知的实时人体运动重建系统。该系统能够从稀疏的传感器数据中高效地重建人体的运动，适用于虚拟现实（VR）、增强现实（AR）、运动捕捉等领域。
 
+## 演示视频
+![Demo Video](xsens_nineperson.mp4)
+
 ## 项目亮点
 
 - **实时性**：系统能够在毫秒级时间内完成运动重建，适用于实时应用。
