@@ -6,19 +6,23 @@ The code for this project is currently in a pre-release state and will be public
 **SSR-HMR** 是一个基于稀疏节点和骨架感知的实时人体运动重建系统。该系统能够从稀疏的传感器数据中高效地重建人体的运动，适用于虚拟现实（VR）、增强现实（AR）、运动捕捉等领域。
 
 ![Pipeline](Pipeline.pdf)
+
 ![nine_person](nine_person.png)
+Pose reconstruction for users with different body proportions. Each row corresponds to a different action, and each column represents a different user. Different users are visually distinguished, while the blue trajectories represent the real motion capture data from the dataset
 ![vr-qualitative](vr-qualitative.png)
+Qualitative comparison of the jumping jack motion sequence reconstructed by different models. The first row shows the visual results of the motion reconstruction for each model, while the second row compares the reconstruction results with the real human motion (represented in blue).
 
-## 演示视频
-![Demo Video](AMASS_dance.mp4)
-![Demo Video](xsens_nineperson.mp4)
+## Demo Video
+![AMASS_dance](AMASS_dance.mp4)
+![xsens_nineperson](xsens_nineperson.mp4)
 
-## 项目亮点
+## Highlights
+Novel SSR-HMR method for real-time, accurate full-body motion reconstruction.
+Lightweight spatiotemporal graph module for precise motion from sparse inputs.
+Torso pose refinement module reduces torso and head orientation drift.
+Hierarchical skeletal structure enhances end-effector positioning accuracy.
+Sub-centimeter accuracy (MPJPE 10 mm, MPEEPE 5 mm) at 267 FPS on CPU
 
-- **实时性**：系统能够在毫秒级时间内完成运动重建，适用于实时应用。
-- **稀疏节点**：仅需少量传感器节点即可实现高精度运动重建，减少硬件成本。
-- **骨架感知**：通过骨架约束，确保重建的运动符合人体运动学，避免不自然的姿态。
-- **轻量级**：算法经过优化，能够在低功耗设备上运行。
 
 ## 应用场景
 
