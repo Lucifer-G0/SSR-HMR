@@ -23,30 +23,46 @@ Qualitative comparison of the jumping jack motion sequence reconstructed by diff
 - Hierarchical skeletal structure enhances end-effector positioning accuracy.
 - Sub-centimeter accuracy (MPJPE 10 mm, MPEEPE 5 mm) at 267 FPS on CPU
 
-## 快速开始
+## Project Structure
 
-### 安装依赖
+```
+SSR-HMR/
+├── data/                # Dataset
+├── models/              # Pre-trained models
+├── net/                 # Model definitions\utility functions
+├── train.py             # Example code
+├── eval.py              # Example code
+├── requirements.txt     # Dependency list
+├── LICENSE              # License
+└── README.md            # Project introduction
+```
 
-确保你已经安装了以下依赖：
+## Quickstart
+
+### Requirements
 
 - Python 3.8+
 - PyTorch 1.10+
-- ﻿numpy==1.25.1
+- numpy==1.25.1
 - upc-pymotion==0.1.8
 
-### 运行示例
+### Run example
 
-1. 克隆本仓库：
+1. clone repository：
 
 ```bash
 git clone https://github.com/Lucifer-G0/SSR-HMR.git
 cd SSR-HMR
 ```
-
-2. 运行示例代码：
-
+2. Training
 ```bash
-python demo.py
+python train.py [data_path(directory of npz files)]
+```
+
+3. Testing
+pretrained model is stored in models
+```bash
+python eval.py [data_path(directory of npz files)] [model_epoch(default:1277)]
 ```
 
 ### Dataset
@@ -55,30 +71,16 @@ Download different datasets from the following list as needed.
 
 - [dataset](https://zenodo.org/record/8427980/files/data.zip?download=1) for Xsens from [SparsePoser ](https://github.com/UPC-ViRVIG/SparsePoser)
 
-- dataset from [AMASS](https://amass.is.tue.mpg.de/index.html)
+- datasets from [AMASS](https://amass.is.tue.mpg.de/index.html)
   - DanceDB
   - HUMAN4D
   - SOMA
   - others
 
-## 项目结构
+  
+## Citation
 
-```
-SSR-HMR/
-├── data/                # 数据集
-├── models/              # 预训练模型
-├── net/               # 模型定义\工具函数
-├── train.py              # 示例代码
-├── eval.py              # 示例代码
-├── requirements.txt     # 依赖列表
-├── LICENSE              # 许可证
-└── README.md            # 项目介绍
-```
-
-
-## 引用
-
-如果你在研究中使用了本项目，请引用以下文献：
+If you use this project in your research, please cite the following paper:
 
 ```bibtex
 @article{yourpaper,
@@ -89,7 +91,6 @@ SSR-HMR/
 }
 ```
 
-## 联系方式
+## Contact
 
-如有任何问题，请联系：[linhai.student@foxmail.com](mailto:linhai.student@foxmail.com)
-
+For any questions, please contact: [linhai.student@foxmail.com](mailto:linhai.student@foxmail.com)

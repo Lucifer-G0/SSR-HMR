@@ -191,7 +191,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "data_path",
         type=str,
-        help="path to data directory containing one or multiple .bvh for training, last .bvh is used as test data",
+        help="path to data directory containing one or multiple .npz for training, last .bvh is used as test data",
     )
 
     args = parser.parse_args()
