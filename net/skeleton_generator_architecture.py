@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from net.loss import MSE_DQ
-import pymotion.rotations.dual_quat_torch as dquat
+import motion.rotations.dual_quat_torch as dquat
 from net.skeleton import (
     SkeletonUnpool,
     find_neighbor,

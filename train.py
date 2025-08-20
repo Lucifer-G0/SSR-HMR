@@ -9,7 +9,7 @@ from torch.utils.data.dataloader import DataLoader
 
 from net.skeleton_generator_architecture import Generator_Model
 from net.motion_data import Train_Data, TrainMotionData, EvalMotionData
-from net.loss import run_generator, get_info_from_npz, eval_result_, run_ik, eval_result
+from net.loss import run_generator, get_info_from_npz, eval_result_, run_ik, eval_result, get_info_from_bvh
 from net.config import param, xsens_parents
 from net.ik_architecture import IK_Model
 
@@ -38,7 +38,7 @@ def main(args):
     for root, dirs, files in os.walk(train_dir):
         for file in files:
             # 检查文件是否以.npz结尾，且文件名不是shape.npz
-            if file.endswith('.npz') and file != 'shape.npz':
+            if file.endswith('.bvh'):
                 full_path = os.path.join(root, file)
                 train_files.append(full_path)
 
@@ -46,7 +46,7 @@ def main(args):
     for root, dirs, files in os.walk(eval_dir):
         for file in files:
             # 检查文件是否以.npz结尾，且文件名不是shape.npz
-            if file.endswith('.npz') and file != 'shape.npz':
+            if file.endswith('.bvh'):
                 full_path = os.path.join(root, file)
                 eval_files.append(full_path)
 
@@ -55,21 +55,19 @@ def main(args):
 
     # Train Files
     for filename in train_files:
-        if filename[-4:] == ".npz":
-            rots, pos, parents, offsets,_ = get_info_from_npz(filename, device)
-            # Train Dataset
-            train_dataset.add_motion(
-                offsets,
-                pos,  # only global position
-                rots,
-                parents,
-            )
+        rots, pos, parents, offsets,_ = get_info_from_bvh(filename,device)
+        # Train Dataset
+        train_dataset.add_motion(
+            offsets,
+            pos,  # only global position
+            rots,
+            parents,
+        )
     print(len(train_dataset), " added to train_dataset")
 
     # Eval Files
     for filename in eval_files:
-        if filename[-4:] == ".npz":
-            eval_dataset.add_motion(filename)
+        eval_dataset.add_motion(filename)
     print(eval_dataset.get_len(), " added to eval_dataset")
 
     train_dataloader = DataLoader(train_dataset, param["batch_size"], shuffle=False)
@@ -82,7 +80,7 @@ def main(args):
     scheduler_g = ReduceLROnPlateau(generator_model.optimizer, 'min', factor=0.5, patience=20)
     scheduler_ik = ReduceLROnPlateau(ik_model.optimizer, 'min', factor=0.5, patience=20)
 
-    mylog = open('trunknet-vr-global.log', mode='a', encoding='utf-8')
+    mylog = open('vr_test.log', mode='a', encoding='utf-8')
     # Training Loop
     best_evaluation = float("inf")
     store_evaluation = float("inf")
@@ -191,7 +189,7 @@ if __name__ == "__main__":
     parser.add_argument(
         "data_path",
         type=str,
-        help="path to data directory containing one or multiple .npz for training, last .bvh is used as test data",
+        help="path to data directory containing one or multiple .bvh for training, last .bvh is used as test data",
     )
 
     args = parser.parse_args()

@@ -4,11 +4,12 @@ import numpy as np
 import torch
 import torch.nn as nn
 
-from pymotion.ops.skeleton_torch import from_root_dual_quat
-from pymotion.rotations import quat
-from pymotion.ops.forward_kinematics_torch import fk
+from motion.ops.skeleton_torch import from_root_dual_quat
 
+from motion.ops.forward_kinematics_torch import fk
+from motion.rotations import quat
 from net.config import param, xsens_parents, S2X_map, SMPLPath
+from motion.io.bvh import BVH
 
 
 class MSE_DQ(nn.Module):
@@ -67,7 +68,7 @@ def eval_result_(results, eval_dataset, device):
 
 
 def eval_pos_error_(motion, result, device):
-    gt_offsets, _, _, gt_joint_poses, gt_parents, fps = motion.values()
+    gt_offsets, _, _,_,_, gt_joint_poses, gt_parents, fps = motion.values()
     gt_offsets = gt_offsets[:, 0].reshape(-1, 3)
     # 从相对于根的坐标系转换到全局坐标系
     global_pos = gt_joint_poses[:, 0, :]
@@ -117,8 +118,8 @@ def eval_result(results, eval_dataset, device):
     for step, result in enumerate(results):
         motion = eval_dataset.get_item(step)
         # Evaluate Positional Error
-        mpjpe, std_mpjpe, mpeepe, std_mpeepe, vel, std_vel, raw_jitter, std_raw_jitter, jitter, std_jitter,mpjre,std_mpjre = eval_pos_error(
-            motion,result, device)
+        mpjpe, std_mpjpe, mpeepe, std_mpeepe, vel, std_vel, raw_jitter, std_raw_jitter, jitter, std_jitter, mpjre, std_mpjre = eval_pos_error(
+            motion, result, device)
 
         array_mpjpe[step] = mpjpe
         array_mpjre[step] = mpjre
@@ -143,9 +144,9 @@ def eval_result(results, eval_dataset, device):
 
 
 def eval_pos_error(motion, result, device):
-    gt_offsets, gt_dqs, _, gt_joint_poses, gt_parents, fps = motion.values()
+    gt_offsets, gt_dqs, _,gt_rots,gt_pos, gt_joint_poses, gt_parents, fps = motion.values()
     gt_offsets = gt_offsets[:, 0].reshape(-1, 3)
-    global_pos = gt_joint_poses[:, 0,:]  # 从相对于根的坐标系转换到全局坐标系
+    global_pos = gt_pos  # 从相对于根的坐标系转换到全局坐标系
 
     res = result.permute(0, 2, 1).flatten(0, 1)
     dqs = res.reshape(res.shape[0], -1, 8)
@@ -154,11 +155,10 @@ def eval_pos_error(motion, result, device):
     rots = rots.to(device)
     joint_poses, pose_global_p = fk(rots, global_pos, gt_offsets, gt_parents)
 
-    gt_dqs = gt_dqs.permute(1,0)[42:]
-    gt_dqs = gt_dqs.reshape(-1,22, 8)
-
-    _, gt_rots = from_root_dual_quat(gt_dqs, gt_parents)
-    gt_rots = gt_rots.to(device)
+    # gt_dqs = gt_dqs.permute(1, 0)[42:]
+    # gt_dqs = gt_dqs.reshape(-1, 22, 8)
+    # _, gt_rots = from_root_dual_quat(gt_dqs, gt_parents)
+    # gt_rots = gt_rots.to(device)
     _, pose_global_t = fk(gt_rots, global_pos, gt_offsets, gt_parents)
 
     # error
@@ -182,11 +182,14 @@ def eval_pos_error(motion, result, device):
             torch.mean(rjitter) / 100, rjitter.std(dim=0).mean() / 100,
             torch.mean(jitter) / 100, jitter.std(dim=0).mean() / 100,
             torch.mean(ae), ae.std(dim=0).mean())
+
+
 def radian_to_degree(q):
     r"""
     Convert radians to degrees.
     """
     return q * 180.0 / np.pi
+
 
 def angle_between(rot1: torch.Tensor, rot2: torch.Tensor):
     r"""
@@ -197,11 +200,12 @@ def angle_between(rot1: torch.Tensor, rot2: torch.Tensor):
     :param rep: The rotation representation used in the input.
     :return: Tensor in shape [batch_size] for angles in radians.
     """
-    rot1 = rot1.reshape(-1,3,3)
-    rot2 = rot2.reshape(-1,3,3)
+    rot1 = rot1.reshape(-1, 3, 3)
+    rot2 = rot2.reshape(-1, 3, 3)
     offsets = rot1.transpose(-2, -1).bmm(rot2)
     angles = rotation_matrix_to_axis_angle(offsets).norm(dim=1)
     return angles
+
 
 def rotation_matrix_to_axis_angle(r: torch.Tensor):
     r"""
@@ -216,7 +220,40 @@ def rotation_matrix_to_axis_angle(r: torch.Tensor):
     return result
 
 
-def get_info_from_npz(filename, device,stride=2):
+def get_info_from_bvh(filename, device):
+    bvh = BVH()
+    bvh.load(filename)
+    rot_roder = np.tile(bvh.data["rot_order"], (bvh.data["rotations"].shape[0], 1, 1))
+    rots = quat.unroll(
+        quat.from_euler(np.radians(bvh.data["rotations"]), order=rot_roder),
+        axis=0,
+    )
+    rots = quat.normalize(rots)  # make sure all quaternions are unit quaternions
+    pos = bvh.data["positions"][:,0,:]
+    parents = bvh.data["parents"]
+    parents[0] = 0  # BVH sets root as None
+    offsets = bvh.data["offsets"]
+    offsets[0] = np.zeros(3)  # force to zero offset for root joint
+    fps = np.array(np.round(1 / bvh.data["frame_time"]))
+    if fps == 120:
+        rots = rots['poses'][::2]
+        pos = pos['trans'][::2]
+        fps = 60
+    elif fps == 60:
+        pass
+    else:
+        print("fps error ", fps)
+        exit(111)
+
+    rots = torch.from_numpy(rots).type(torch.float32).to(device)
+    pos = torch.from_numpy(pos).type(torch.float32).to(device)
+    parents = torch.Tensor(parents).long().to(device)
+    offsets = torch.from_numpy(offsets).type(torch.float32).to(device)
+    fps = torch.from_numpy(fps).float().to(device)
+    return rots, pos, parents, offsets, fps
+
+
+def get_info_from_npz(filename, device, step=2):
     """
         return:
             均为numpy数组
@@ -229,8 +266,8 @@ def get_info_from_npz(filename, device,stride=2):
 
     motion_data = np.load(filename)
     gender = motion_data['gender'].item().upper()
-    rots = motion_data['poses'][::stride].reshape(-1, 52, 3)
-    pos = motion_data['trans'][::stride]
+    rots = motion_data['poses'][::step].reshape(-1, 52, 3)
+    pos = motion_data['trans'][::step]
     fps = motion_data.get('mocap_frame_rate', motion_data.get('mocap_framerate', None))
 
     # get skeleton graph from smpl model file (offsets)
@@ -260,7 +297,7 @@ def get_info_from_npz(filename, device,stride=2):
     pos = torch.from_numpy(pos).type(torch.float32).to(device)
     parents = torch.Tensor(parents).long().to(device)
     offsets = torch.from_numpy(offsets).type(torch.float32).to(device)
-    fps = torch.from_numpy(fps).float().to(device)/stride
+    fps = torch.from_numpy(fps).float().to(device) / 2
 
     return rots, pos, parents, offsets, fps
 
@@ -314,7 +351,7 @@ class MSE_DQ_FK(nn.Module):
     def forward_ik(self, ik_res, gt_result):
         # ground truth
         target_joint_poses, target_joint_rot_mat = gt_result
-        global_pos = target_joint_poses[:, :, 0,:]
+        global_pos = target_joint_poses[:, :, 0, :]
 
         # compute final positions (root space) using standard FK
         ik_res = ik_res.reshape((ik_res.shape[0], -1, 8, ik_res.shape[-1])).permute(0, 3, 1, 2)

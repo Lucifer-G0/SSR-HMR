@@ -4,11 +4,14 @@ import random
 import argparse
 import numpy as np
 
+from motion.io.bvh import BVH
 from net.loss import run_generator, eval_result, run_ik
 from net.skeleton_generator_architecture import Generator_Model
 from net.motion_data import Train_Data, EvalMotionData
 from net.ik_architecture import IK_Model
 from net.config import param, xsens_parents
+from motion.ops.skeleton import from_root_dual_quat
+import motion.rotations.quat as quat
 
 
 # 为评估定制，统计每个文件的帧率和时长，考虑到帧率有可能不同，用帧的数量除以帧率得到时长
@@ -37,7 +40,7 @@ def main(args):
     for root, dirs, files in os.walk(eval_dir):
         for file in files:
             # 检查文件是否以.npz结尾，且文件名不是shape.npz
-            if file.endswith('.npz') and file != 'shape.npz':
+            if file.endswith('.bvh'):
                 full_path = os.path.join(root, file)
                 eval_files.append(full_path)
 
@@ -51,8 +54,7 @@ def main(args):
     total_frame_num = 0
     # Eval Files
     for filename in eval_files:
-        if filename[-4:] == ".npz":
-            eval_dataset.add_motion(filename)
+        eval_dataset.add_motion(filename)
 
     # Create Models
     train_data = Train_Data(device, param)
@@ -66,7 +68,41 @@ def main(args):
     results_ik = run_ik(ik_model, results, train_data, eval_dataset)
     results = results_ik
 
-    mpjpe, std_mpjpe, mpeepe, std_mpeepe, vel, std_vel, rjitter, std_rjitter, jitter, std_jitter,mpjre,std_mpjre = eval_result(results, eval_dataset, device)
+    for step, filename in enumerate(eval_files):
+        print(step, filename)
+
+        bvh = BVH()
+        bvh.load(filename)
+        bvh.data["positions"] = bvh.data["positions"][42:42+1000]
+        bvh.data["positions"][:,0,:]=np.zeros(3)
+        bvh.data["rotations"] = bvh.data["rotations"][42:42+1000]
+
+        fileno = str(step)
+        # 保留去掉首部的原始文件、与结果开头对齐
+        path = "down"
+        filename = "down_" + fileno+".bvh"
+        bvh.save(os.path.join(path, filename))
+
+        # 保留结果bvh文件，用于直观用户尺寸评估
+        dqs = results[step].permute(0, 2, 1).flatten(0, 1).cpu().detach().numpy()
+        # get rotations and translations from dual quatenions
+        dqs = dqs.reshape(dqs.shape[0], -1, 8)
+        _, rots = from_root_dual_quat(dqs, bvh.data["parents"])
+        # quaternions to euler
+        rot_roder = np.tile(bvh.data["rot_order"], (rots.shape[0], 1, 1))
+        rotations = np.degrees(quat.to_euler(rots, order=rot_roder))
+        bvh.data["rotations"] = rotations[:1000]
+        # positions
+        # positions = bvh.data["positions"][: rotations.shape[0]]
+        # bvh.data["positions"] = positions
+
+        path = "predict"
+        filename = "predict_" + fileno+".bvh"
+        bvh.save(os.path.join(path, filename))
+
+
+    mpjpe, std_mpjpe, mpeepe, std_mpeepe, vel, std_vel, rjitter, std_rjitter, jitter, std_jitter, mpjre, std_mpjre = eval_result(
+        results, eval_dataset, device)
     evaluation_loss = mpjpe + mpeepe
 
     end_event.record()
@@ -83,6 +119,40 @@ def main(args):
     print("Vel: {}({})".format(vel, std_vel))
     print("RJitter: {}({})".format(rjitter, std_rjitter))
     print("Jitter: {}({})".format(jitter, std_jitter))
+
+    print("MPJPE & MPJRE & MPEEPE & MPJVE & Jitter")
+    print("{:.2f}({:.2f}) & {:.2f}({:.2f}) & {:.2f}({:.2f}) && {:.2f}({:.2f}) & {:.2f}({:.2f})".format(mpjpe, std_mpjpe,
+                                                                                                       mpjre,
+                                                                                                       std_rjitter,
+                                                                                                       mpeepe,
+                                                                                                       std_mpeepe, vel,
+                                                                                                       std_vel, jitter,
+                                                                                                       std_jitter))
+
+
+def result_to_bvh(res, bvh, filename, save=True):
+    res = res.permute(0, 2, 1)
+    res = res.flatten(0, 1)
+    res = res.cpu().detach().numpy()
+    # get dqs and displacement
+    dqs = res
+
+    # get rotations and translations from dual quatenions
+    dqs = dqs.reshape(dqs.shape[0], -1, 8)
+    _, rots = from_root_dual_quat(dqs, bvh.data["parents"])
+    # quaternions to euler
+    rot_roder = np.tile(bvh.data["rot_order"], (rots.shape[0], 1, 1))
+    rotations = np.degrees(quat.to_euler(rots, order=rot_roder))
+    bvh.data["rotations"] = rotations
+    # positions
+    positions = bvh.data["positions"][: rotations.shape[0]]
+    bvh.data["positions"] = positions
+    path = None
+    if save:
+        path = "predict"
+        filename = "eval_" + filename
+        bvh.save(os.path.join(path, filename))
+    return path, filename
 
 
 def load_model(model, model_epoch, model_name, device):

@@ -1,7 +1,6 @@
 import torch
 import torch.nn as nn
-import pymotion.rotations.dual_quat_torch as dquat
-from torch import jit
+import motion.rotations.dual_quat_torch as dquat
 
 
 class IK_NET(nn.Module):
@@ -31,7 +30,7 @@ class IK_NET(nn.Module):
         r_leg_offsets = [6, 7, 8]
         r_leg_dq_in = [7]
         self.r_leg_dq_out = [5, 6, 7]
-        # Left Arm -------M---------------------------------
+        # Left Arm ----------------------------------------
         l_arm_offsets = [15, 16, 17]
         l_arm_dq_in = [16]
         self.l_arm_dq_out = [14, 15, 16]

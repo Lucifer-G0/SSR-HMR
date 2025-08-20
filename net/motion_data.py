@@ -1,10 +1,9 @@
-import numpy as np
 import torch
-from pymotion.ops.forward_kinematics_torch import fk
+from motion.ops.forward_kinematics_torch import fk
 from torch.utils.data import Dataset
-import pymotion.rotations.dual_quat_torch as dquat
-from pymotion.ops.skeleton_torch import to_root_dual_quat, from_root_dual_quat
-from net.loss import get_info_from_npz
+import motion.rotations.dual_quat_torch as dquat
+from motion.ops.skeleton_torch import to_root_dual_quat, from_root_dual_quat
+from net.loss import get_info_from_npz, get_info_from_bvh
 
 
 class Train_Data:
@@ -96,7 +95,7 @@ class EvalMotionData:
         self.device = device
 
     def add_motion(self, filename):
-        rotations, global_pos, parents, offsets, fps = get_info_from_npz(filename, self.device)
+        rotations, global_pos, parents, offsets, fps = get_info_from_bvh(filename, self.device)
 
         dqs = to_root_dual_quat(rotations, global_pos, parents, offsets)
         dqs = dquat.unroll(dqs, dim=0)  # ensure continuity
@@ -120,7 +119,9 @@ class EvalMotionData:
             "offsets": offsets,
             "dqs": dqs,
             "sparse_dqs": sparse_dqs,
-            "joint_poses": gt_joint_poses,
+            "gt_rots": gt_rots,
+            "gt_pos": gt_pos,
+            "gt_joint_poses":gt_joint_poses,
             "parents": parents,
             "fps": fps
         }

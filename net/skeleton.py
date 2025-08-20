@@ -143,7 +143,7 @@ class SkeletonConv(nn.Module):
         return res
 
 
-def get_normalize_adjacency(neighbor_list, max_hop=2):
+def get_normalize_adjacency(neighbor_list):
     # 节点数量
     num_nodes = len(neighbor_list)
 
@@ -157,15 +157,15 @@ def get_normalize_adjacency(neighbor_list, max_hop=2):
             adjacency_matrix[neighbor, node] = 1  # 如果图是无向图，邻接矩阵是对称的
 
     # 无向图正则化--------------------------------------------------------------------
-    Dl = np.sum(adjacency_matrix, 0)
-    num_node = adjacency_matrix.shape[0]
-    Dn = np.zeros((num_node, num_node))
-    for i in range(num_node):
-        if Dl[i] > 0:
-            Dn[i, i] = Dl[i] ** (-0.5)
-    normalize_adjacency = np.dot(np.dot(Dn, adjacency_matrix), Dn)  # DAD
+    # Dl = np.sum(adjacency_matrix, 0)
+    # num_node = adjacency_matrix.shape[0]
+    # Dn = np.zeros((num_node, num_node))
+    # for i in range(num_node):
+    #     if Dl[i] > 0:
+    #         Dn[i, i] = Dl[i] ** (-0.5)
+    # normalize_adjacency = np.dot(np.dot(Dn, adjacency_matrix), Dn)  # DAD
 
-    return normalize_adjacency
+    return adjacency_matrix
 
 
 def create_pooling_list(parents, add_displacement=False):

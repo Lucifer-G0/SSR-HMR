@@ -2,7 +2,7 @@
 <project version="4">
   <component name="ProjectModuleManager">
     <modules>
-      <module fileurl="file://$PROJECT_DIR$/.idea/SSR-HMR.iml" filepath="$PROJECT_DIR$/.idea/SSR-HMR.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/noregA.iml" filepath="$PROJECT_DIR$/.idea/noregA.iml" />
     </modules>
   </component>
 </project>
