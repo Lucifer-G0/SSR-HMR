@@ -23,14 +23,6 @@ Qualitative comparison of the jumping jack motion sequence reconstructed by diff
 - Hierarchical skeletal structure enhances end-effector positioning accuracy.
 - Sub-centimeter accuracy (MPJPE 10 mm, MPEEPE 5 mm) at 267 FPS on CPU
 
-
-## 应用场景
-
-- **虚拟现实（VR）**：实时捕捉用户动作，提供沉浸式体验。
-- **增强现实（AR）**：将虚拟角色与现实环境结合，实现自然交互。
-- **运动捕捉**：用于电影制作、游戏开发等领域的动作捕捉。
-- **医疗康复**：实时监测患者的运动状态，辅助康复训练。
-
 ## 快速开始
 
 ### 安装依赖
@@ -41,12 +33,6 @@ Qualitative comparison of the jumping jack motion sequence reconstructed by diff
 - PyTorch 1.10+
 - NumPy
 - OpenCV
-
-你可以通过以下命令安装依赖：
-
-```bash
-pip install -r requirements.txt
-```
 
 ### 运行示例
 
@@ -80,10 +66,6 @@ SSR-HMR/
 ├── LICENSE              # 许可证
 └── README.md            # 项目介绍
 ```
-
-## 贡献
-
-我们欢迎任何形式的贡献！如果你有任何改进建议或发现了问题，请提交 Issue 或 Pull Request。
 
 
 ## 引用
