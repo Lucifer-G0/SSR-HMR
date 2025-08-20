@@ -5,16 +5,16 @@ The code for this project is currently in a pre-release state and will be public
 
 **SSR-HMR** is a real-time human motion reconstruction system based on sparse nodes and skeleton perception. The system can efficiently reconstruct human movement from sparse sensor data, which is suitable for virtual reality (VR), augmented reality (AR), motion capture and other fields.
 
-![Pipeline](Pipeline.pdf)
+![Pipeline](visualization/Pipeline.jpg)
 
-![nine_person](nine_person.png)
+![nine_person](visualization/nine_person.png)
 Pose reconstruction for users with different body proportions. Each row corresponds to a different action, and each column represents a different user. Different users are visually distinguished, while the blue trajectories represent the real motion capture data from the dataset
-![vr-qualitative](vr-qualitative.png)
+![vr-qualitative](visualization/vr-qualitative.png)
 Qualitative comparison of the jumping jack motion sequence reconstructed by different models. The first row shows the visual results of the motion reconstruction for each model, while the second row compares the reconstruction results with the real human motion (represented in blue).
 
 ## Demo Video
-![AMASS_dance](AMASS_dance.mp4)
-![xsens_nineperson](xsens_nineperson.mp4)
+![AMASS_dance](visualization/AMASS_dance.mp4)
+![xsens_nineperson](visualization/xsens_nineperson.mp4)
 
 ## Highlights
 - Novel SSR-HMR method for real-time, accurate full-body motion reconstruction.
