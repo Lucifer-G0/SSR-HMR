@@ -31,8 +31,8 @@ Qualitative comparison of the jumping jack motion sequence reconstructed by diff
 
 - Python 3.8+
 - PyTorch 1.10+
-- NumPy
-- OpenCV
+- ﻿numpy==1.25.1
+- upc-pymotion==0.1.8
 
 ### 运行示例
 
@@ -49,9 +49,17 @@ cd SSR-HMR
 python demo.py
 ```
 
-### 数据集
+### Dataset
 
-我们提供了一个示例数据集 `sample_data/`，你可以使用它来测试系统。你也可以使用自己的数据集，只需按照相同的格式组织数据。
+Download different datasets from the following list as needed.
+
+- [dataset](https://zenodo.org/record/8427980/files/data.zip?download=1) for Xsens from [SparsePoser ](https://github.com/UPC-ViRVIG/SparsePoser)
+
+- dataset from [AMASS](https://amass.is.tue.mpg.de/index.html)
+  - DanceDB
+  - HUMAN4D
+  - SOMA
+  - others
 
 ## 项目结构
 
